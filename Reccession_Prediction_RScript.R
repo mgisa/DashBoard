@@ -51,39 +51,22 @@ library(purrr)
 library(caret)
 library(lattice)
 library(kableExtra)
+library(tidyverse)
+library(caret)
+library(e1071)
 #_______________________________________
 
 #STEP 3: Import Dataset.
 
-Recession_data<- read.csv("C:/Users/Murera Gisa/Desktop/BNR_ASSIGNMENT/Recession_Prediction.csv",stringsAsFactors = FALSE, header = TRUE)
+Recession_data<- read.csv("C:/Users/Murera Gisa/Desktop/BNR_ASSIGNMENT/Recession_Prediction.csv",
+                          stringsAsFactors = FALSE, header = TRUE)
 
 # Checking Features Multicollinearity by PCA and select the PCs to be used
 #_________________________________________________________________
 #Since the skewness and magnitude of variables influence PCA we set center and scale True
 prin_comp <- prcomp(Recession_data[,2:25], scale. = TRUE, center = TRUE)
+#SELECTING AUTOMATICALLY THE PCS NEEDED FOR ANALYTICS
 
-#pca<-princomp(Recession_data[,2:25])
-#features_Contribution<-pca$loadings #contribution of variables on PCs formation (PCs is combination of highly correlated var)
-names(prin_comp)
-summary(prin_comp)
-prin_comp$rotation
-
-#Extract PCS
-pcs<- data.frame(prin_comp$x)
-str(pcs)
-#Percentage of variance explained by each PCs
-cov = round(prin_comp$sdev^2/sum(prin_comp$sdev^2)*100, 2)
-cov
-cov = data.frame(c(1:9),cov)
-names(cov)[1] = 'PCs'
-names(cov)[2] = 'Variance'
-cov
-
-#How many variables to retain for further analysis
-plot(prin_comp, type = "l", col="red")
-require(caret)
-install.packages("e1071")
-require(e1071)
 Retained_PCs = preProcess(Recession_data[,2:24],
                           method=c("BoxCox", "center", 
                             "scale", "pca"))
@@ -96,6 +79,7 @@ data<-cbind(PCs,Recession_data$Recession)
 View(data)
 Recess_data<- data %>% as.data.frame()%>%mutate(Recession=data$`Recession_data$Recession`)
 dim(Recess_data)
+View(Recess_data)
 Recess_data<- Recess_data[,-10]
 dim(Recess_data)
 View(Recess_data)
@@ -212,8 +196,8 @@ boxplt<-plot_box(Recession_Occurs, num_cols)
 
 #For Binary Classification we need to convert output into factor
 
-factor_variable_position <- c(25)
-Recession_data<- Recession_data[,-1] %>% mutate_at(.,vars(factor_variable_position),~as.factor(.)) # Convert output into factor variable
+factor_variable_position <- c(10)
+Recession_data<- Recess_data %>% mutate_at(.,vars(factor_variable_position),~as.factor(.)) # Convert output into factor variable
 
 # Create the training and test datasets for Recession data
 #
@@ -313,14 +297,14 @@ yhat.adaboost <- predict(adaboost_model, xytest)
 Conf_Mat <- confusionMatrix(ytest, yhat.adaboost)
 #__________________________
 
-    # 6.6. Neural Network Model (Nnet)
+    # 6.6. Model6: Neural Network Model (Nnet)
 set.seed(12345)
 nnet.model <- train(Recession~., data = xytrain, method = "nnet",trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3, search = "grid"),  metric = "Accuracy",trace=FALSE) 
 yhat.nnet <- predict(nnet.model, xytest)
 Conf_Mat <- confusionMatrix(ytest, yhat.nnet)
 #----------------------------------------
 
-     #6.7 Model6: RFlda (High-Dimensional Factor-Based Linear Discriminant Analysis) Model
+     #6.7 Model7: RFlda (High-Dimensional Factor-Based Linear Discriminant Analysis) Model
      #
 RFlda.model <- train(Recession~., data = xytrain, method = "RFlda",trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3, search = "grid"),  metric = "Accuracy") 
 yhat.RFlda <- predict(RFlda.model, xytest)
@@ -444,4 +428,6 @@ Sumbission_Format<-as.data.frame(Recession_label)
 kable(Sumbission_Format, "latex","latex", caption = "Next six month ML Predicted Recession Labels") # Turn Latex Code
 #__________________
                    #END OF SCRIPT____________________
-    #FORECASTING BY forecastML Library
+      
+#Author: Mr. Murera Gisa
+#Email: elgisamur@gmail.com/mgisa@aims.ac.rw

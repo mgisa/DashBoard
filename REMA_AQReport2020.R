@@ -8,6 +8,9 @@
 #____________________________________
 #Installing packages
 install.packages("latticeExtra", repos="http://R-Forge.R-project.org")
+install.packages("shinyauthr",repos="http://R-Forge.R-project.org")
+
+devtools::install_github("paulc91/shinyauthr")
 install.packages("tidyverse")
 install.packages("openair")
 
